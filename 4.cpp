@@ -54,3 +54,9 @@ int main()
 		printf("Operator grammar");
 }
 // https://www.geeksforgeeks.org/operator-grammar-and-precedence-parser-in-toc/
+
+// INPUT : 
+// 3
+// A=A*A
+// B=AA
+// A=$
