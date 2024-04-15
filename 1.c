@@ -1,174 +1,174 @@
+//Design a lexical analyzer for a given language and the lexical analyzer should ignore redundant spaces, tabs, and new lines. It should also ignore comments. Although the syntax specification states that identifiers can be arbitrarily long, you may restrict the length to some reasonable value. Simulate the same in C language.
 
-// // https://www.youtube.com/watch?v=EO7y1rw9bqo
+#include <stdio.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <string.h>
 
-// #include<stdlib.h>
-// #include<stdio.h>
-// #include<string.h>
-// #include<ctype.h>
-// #include<math.h>
+#define MAX_IDENTIFIER_LENGTH 50
 
-// int main(){
-//     int i, ident=0, num=0, ope=0;
-//     char s[30];
+enum TokenType {
+    TOKEN_IDENTIFIER,
+    TOKEN_NUMBER,
+    TOKEN_OPERATOR,
+    TOKEN_KEYWORD,
+    TOKEN_SYMBOL,
+    TOKEN_UNKNOWN,
+    TOKEN_EOF
+};
 
-//     printf("Enter Eqquation : ");
-//     fflush(stdout);
-//     scanf("%s", s);
+struct Token {
+    enum TokenType type;
+    char lexeme[MAX_IDENTIFIER_LENGTH];
+};
 
-//     for(i=0; s[i]!='\0'; i++){
-//         char ch = s[i];
+// Function to check if a character is a valid identifier character
+bool is_valid_identifier_char(char c) {
+    return isalnum(c) || c == '_';
+}
 
-//         if(isaplpha(ch)){
-//             printf("%c is an identifier.\n", ch);
-//             ident++;
-//         }
-//         else if(isdigit(ch)){
-//             printf("%c is a number.\n", ch);
-//             num++;
+// Function to check if a character is a whitespace character
+bool is_whitespace(char c) {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
 
-//         }
-//         else{
-//             printf("%c is an operator.\n", ch);
-//             ope++;
+// Function to check if a string is a keyword
+bool is_keyword(const char *lexeme) {
+    // Add your keyword checking logic here
+    // For simplicity, let's assume some keywords
+    const char *keywords[] = {"if", "else", "while", "for", "int", "float", "return"};
+    for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); ++i) {
+        if (strcmp(lexeme, keywords[i]) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
 
-//         }
+// Function to get the next token from input
+struct Token get_next_token() {
+    struct Token token;
+    char c;
+    int i = 0;
+
+    // Ignore whitespaces and comments
+    do {
+        c = getchar();
+        if (c == '/') {
+            char next_char = getchar();
+            if (next_char == '/') {
+                // Comment, skip until end of line
+                while (c != '\n' && c != EOF) {
+                    c = getchar();
+                }
+            } else {
+                // Not a comment, put back the character
+                ungetc(next_char, stdin);
+            }
+        }
+    } while (is_whitespace(c));
+
+    if (c == EOF) {
+        token.type = TOKEN_EOF;
+        return token;
+    }
+
+    // Identifiers or Keywords
+    if (is_valid_identifier_char(c)) {
+        token.type = TOKEN_IDENTIFIER;
+        token.lexeme[i++] = c;
+        while ((c = getchar()) != EOF && is_valid_identifier_char(c) && i < MAX_IDENTIFIER_LENGTH - 1) {
+            token.lexeme[i++] = c;
+        }
+        token.lexeme[i] = '\0';
+        ungetc(c, stdin);
+        if (is_keyword(token.lexeme)) {
+            token.type = TOKEN_KEYWORD;
+        }
+        return token;
+    }
+
+    // Numbers
+    if (isdigit(c)) {
+        token.type = TOKEN_NUMBER;
+        token.lexeme[i++] = c;
+        while ((c = getchar()) != EOF && (isdigit(c) || c == '.') && i < MAX_IDENTIFIER_LENGTH - 1) {
+            token.lexeme[i++] = c;
+        }
+        token.lexeme[i] = '\0';
+        ungetc(c, stdin);
+        return token;
+    }
+
+    // Operators
+    // Assuming operators are single characters
+    if (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '<' || c == '>') {
+        token.type = TOKEN_OPERATOR;
+        token.lexeme[i++] = c;
+        token.lexeme[i] = '\0';
+        return token;
+    }
+
+    // Symbols
+    // Assuming symbols are single characters
+    if (c == '(' || c == ')' || c == '{' || c == '}' || c == ';' || c == ',') {
+        token.type = TOKEN_SYMBOL;
+        token.lexeme[i++] = c;
+        token.lexeme[i] = '\0';
+        return token;
+    }
+
+    // Unknown token
+    token.type = TOKEN_UNKNOWN;
+    token.lexeme[0] = c;
+    token.lexeme[1] = '\0';
+    return token;
+}
+
+int main() {
+    struct Token token;
+
+    // Get tokens until EOF
+    do {
+        token = get_next_token();
+        switch (token.type) {
+            case TOKEN_IDENTIFIER:
+                printf("Identifier: %s\n", token.lexeme);
+                break;
+            case TOKEN_NUMBER:
+                printf("Number: %s\n", token.lexeme);
+                break;
+            case TOKEN_OPERATOR:
+                printf("Operator: %s\n", token.lexeme);
+                break;
+            case TOKEN_KEYWORD:
+                printf("Keyword: %s\n", token.lexeme);
+                break;
+            case TOKEN_SYMBOL:
+                printf("Symbol: %s\n", token.lexeme);
+                break;
+            case TOKEN_UNKNOWN:
+                printf("Unknown: %s\n", token.lexeme);
+                break;
+            case TOKEN_EOF:
+                printf("End of file\n");
+                break;
+            default:
+                break;
+        }
+    } while (token.type != TOKEN_EOF);
+
+    return 0;
+}
+
+// INPUT : 
+// int main() {
+//     int x = 10;
+//     float y = 20.5;
+//     if (x > 5) {
+//         printf("x is greater than 5\n");
+//     } else {
+//         printf("x is less than or equal to 5\n");
 //     }
-
-//     printf("Identifiers : %d\n", ident);
-//     printf("Numbers : %d\n", num);
-//     printf("Operators : %d\n", ope);
-//     printf("Total Tokens : %d\n", ident+num+ope);
-
 //     return 0;
-
-
 // }
-
-
-
-#include<string.h>
-#include<ctype.h>
-#include<stdio.h>
-void keyword(char str[10])
-{
-if(strcmp("for",str)==0||strcmp("while",str)==0||strcmp("do",str)==0|| strcmp("int",str)==0||strcmp("float",str)==0||strcmp("char",str)==0||strcmp("double",str)==0||
-strcmp("static",str)==0||strcmp("switch",str)==0||strcmp("case",str)==0)
-printf("\n%s is a keyword",str);
-else
-printf("\n%s is an identifier",str);
-}
-main()
-{
-FILE *f1,*f2,*f3;
-
-char c,str[10],st1[10];
-
-int num[100],lineno=0,tokenvalue=0,i=0,j=0,k=0;
-
-printf("\nEnter the c program");/gets(st1);/
-
-f1=fopen("input","w");
-
-while((c=getchar())!=EOF)
-
-putc(c,f1);
-
-fclose(f1);
-
-f1=fopen("input","r");
-
-f2=fopen("identifier","w");
-
-f3=fopen("specialchar","w");
-
-while((c=getc(f1))!=EOF){
-if(isdigit(c))
-{
-tokenvalue=c-'0';
-
-c=getc(f1);
-
-while(isdigit(c)){
-
-tokenvalue*=10+c-'0';  // Using Lex tool to analyse 
-c=getc(f1);
-}
-num[i++]=tokenvalue;
-
-ungetc(c,f1);
-}
-else if(isalpha(c))
-{
-putc(c,f2);
-
-c=getc(f1);
-
-while(isdigit(c)||isalpha(c)||c=='_'||c=='$')
-{
-putc(c,f2);
-c=getc(f1);
-}
-putc(' ',f2);
-
-ungetc(c,f1);
-}
-else if(c==' '||c=='\t')
-printf(" ");
-else
-if(c=='\n')
-lineno++;
-else
-putc(c,f3); // Lex analyzer using lex tool
-}
-fclose(f2);
-
-fclose(f3);
-
-fclose(f1);
-
-printf("\nThe no's in the program are");
-
-for(j=0;j<i;j++)
-
-printf("%d",num[j]);
-
-printf("\n");
-
-f2=fopen("identifier","r");
-
-k=0;
-
-printf("The keywords and identifiersare:");
-
-while((c=getc(f2))!=EOF){
-
-if(c!=' ')
-
-str[k++]=c;
-
-else
-{
-str[k]='\0';
-
-keyword(str);
-
-k=0;
-}
-}
-fclose(f2);
-
-f3=fopen("specialchar","r");
-
-printf("\nSpecial characters are");
-
-while((c=getc(f3))!=EOF)
-
-printf("%c",c);
-
-printf("\n");
-
-fclose(f3);
-
-printf("Total no. of lines are:%d",lineno);
-
-}
