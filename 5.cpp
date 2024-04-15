@@ -58,3 +58,6 @@ int main() {
 }
 
 // https://educatech.in/program-for-construction-of-lr-parsing-table-using-c/
+
+// INPUT :
+// id+id*id-id
