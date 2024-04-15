@@ -116,3 +116,8 @@ void printIndirectTriples(IndirectTriple indirectTriples[], int count) {
         printf("(%d, %c)\n", indirectTriples[i].tripleIndex, indirectTriples[i].op);
     }
 }
+
+// INPUT
+
+
+// (a + b) * (c - d)
